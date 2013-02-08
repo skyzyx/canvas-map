@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Raphaël · USA</title>
+
+		<style type="text/css" media="screen">
+		#canvas, #paper {
+			width: 1000px;
+			height: 600px;
+			top: 0;
+			left: 0;
+			position: absolute;
+		}
+		</style>
+
+		<script src="http://github.com/DmitryBaranovskiy/raphael/raw/master/raphael-min.js"></script>
+		<script src="map.js"></script>
+
+		<script type="text/javascript" charset="utf-8">
+		window.onload = function () {
+			var R = Raphael("paper", 1000, 700);
+
+			var attr = {
+				"fill": "#6e0101",
+				"stroke": "#bbb",
+				"stroke-width": 1,
+				"stroke-linejoin": "round",
+			};
+
+			var text_attr = {
+				"fill": "#fff",
+				"font-family": "Arial",
+				"font-size": 16,
+				"font-weight": "bold"
+			};
+
+			var hover = {
+				fill: "0-#c00-#f00" //"#f00"
+			};
+
+			var US = {};
+
+			for (state in map_info.paths) {
+				if (map_info.paths.hasOwnProperty(state)) {
+
+					US[state] = R.path(map_info.paths[state].path).attr(attr);
+
+					US[state]._text_ = R.text(
+						map_info.labels[state].label_x,
+						map_info.labels[state].label_y,
+						state
+					).attr(text_attr);
+				}
+			}
+
+			var current = null;
+			for (var state in US) {
+
+				(function (st, state) {
+
+					st[0].style.cursor = "pointer";
+
+					st[0].onmouseover = function() {
+
+						current && US[current].animate({
+							fill: attr.fill,
+							stroke: attr.stroke
+						}, 150);
+
+						st.animate({
+							fill: hover.fill, //st.color,
+							stroke: "#ccc"
+						}, 150);
+
+						st.toFront();
+						// st._text_.toFront();
+
+						US[state]._hovertext_ = R.text(
+							map_info.labels[state].label_x,
+							map_info.labels[state].label_y,
+							map_info.names[state]
+						).attr(text_attr);
+
+						US[state]._glow_ = US[state].glow({
+							width: 5,
+							opacity: 0.5
+						});
+
+						R.safari();
+						current = state;
+					};
+
+					st[0].onmouseout = function() {
+						st.animate({
+							fill: attr.fill,
+							stroke: attr.stroke
+						}, 150);
+
+						US[state]._glow_.remove();
+						US[state]._hovertext_.remove();
+						st.toFront();
+						st._text_.toFront();
+
+						R.safari();
+					};
+
+				})(US[state], state);
+			}
+		};
+		</script>
+	</head>
+
+	<body>
+		<div id="canvas">
+			<div id="paper"></div>
+		</div>
+	</body>
+</html>
